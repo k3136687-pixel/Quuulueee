@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -356,7 +357,7 @@ CreateToggle(TabGeneral, "Большие головы (Head Size)", function(v)
 end)
 
 
--- ==================== 2. КИЛЛЕР (ПЕРЕСМОТРЕННЫЙ) ====================
+-- ==================== 2. КИЛЛЕР (ИСПРАВЛЕНО) ====================
 local TabKiller = CreateTab("🔪 Киллер")
 
 CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Удар)", function(v)
@@ -367,10 +368,12 @@ CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Уда�
                 pcall(function()
                     local char = LocalPlayer.Character
                     local rootPart = char and char:FindFirstChild("HumanoidRootPart")
-                    local knife = char and (char:FindFirstChild("Knife") or LocalPlayer.Backpack:FindFirstChild("Knife"))
+                    local knife = char and char:FindFirstChild("Knife") or LocalPlayer.Backpack:FindFirstChild("Knife")
                     
                     if rootPart and knife then
-                        knife.Parent = char
+                        if knife.Parent == LocalPlayer.Backpack then
+                            knife.Parent = char
+                        end
                         for _, p in pairs(Players:GetPlayers()) do
                             if not _G.KillAllActive then break end
                             if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
@@ -395,7 +398,7 @@ CreateToggle(TabKiller, "Тихий аим с помощью ножа", function
 end)
 
 
--- ==================== 3. ШЕРИФ (ПЕРЕСМОТРЕННЫЙ) ====================
+-- ==================== 3. ШЕРИФ (ИСПРАВЛЕНО) ====================
 local TabSheriff = CreateTab("🔫 Шериф")
 
 CreateToggle(TabSheriff, "Автоподбор оружия", function(v)
@@ -403,8 +406,8 @@ CreateToggle(TabSheriff, "Автоподбор оружия", function(v)
     task.spawn(function()
         while _G.AutoPickupGun do
             pcall(function()
-                for _, obj in pairs(Workspace:GetDescendants()) do
-                    if obj.Name == "GunDrop" and obj:IsA("BasePart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                for _, obj in pairs(Workspace:GetChildren()) do
+                    if (obj.Name == "GunDrop" or obj.Name == "Gun") and obj:IsA("BasePart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                         LocalPlayer.Character.HumanoidRootPart.CFrame = obj.CFrame
                     end
                 end
@@ -471,9 +474,11 @@ CreateToggle(TabSheriff, "Авто стрельба [Зациклено]", funct
         while _G.AutoShoot do
             pcall(function()
                 local char = LocalPlayer.Character
-                local gun = char and (char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun"))
+                local gun = char and char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
                 if gun then
-                    gun.Parent = char
+                    if gun.Parent == LocalPlayer.Backpack then
+                        gun.Parent = char
+                    end
                     for _, p in pairs(Players:GetPlayers()) do
                         if p ~= LocalPlayer and p.Character and (p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife")) then
                             gun:Activate()
@@ -487,7 +492,7 @@ CreateToggle(TabSheriff, "Авто стрельба [Зациклено]", funct
 end)
 
 
--- ==================== 4. КНОПКА ====================
+-- ==================== 4. КНОПКА (ИСПРАВЛЕНО) ====================
 local TabButton = CreateTab("🔘 Кнопка")
 local customShootGui = nil
 
@@ -509,9 +514,11 @@ CreateToggle(TabButton, "Экранная кнопка 'Shoot'", function(v)
         screenBtn.MouseButton1Click:Connect(function()
             pcall(function()
                 local char = LocalPlayer.Character
-                local gun = char and (char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun"))
+                local gun = char and char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
                 if gun then
-                    gun.Parent = char
+                    if gun.Parent == LocalPlayer.Backpack then
+                        gun.Parent = char
+                    end
                     gun:Activate()
                 end
             end)
