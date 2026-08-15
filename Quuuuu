@@ -1,5 +1,5 @@
 -- =============================================
--- Quuua Hub | Modern MM2 Edition (Part 1: UI & Loader)
+-- Quuua Hub | Modern MM2 Edition (Part 1/2)
 -- TikTok: @symashedshi
 -- =============================================
 
@@ -25,7 +25,7 @@ if not success then
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- ==================== ЗАГРУЗЧИК (ФОН НА ВЕСЬ ЭКРАН ТОЛЬКО ПРИ ЗАГРУЗКЕ) ====================
+-- ==================== ЗАГРУЗЧИК ====================
 local BlurOverlay = Instance.new("Frame", ScreenGui)
 BlurOverlay.Size = UDim2.new(2, 0, 2, 0)
 BlurOverlay.Position = UDim2.new(-0.5, 0, -0.5, 0)
@@ -130,19 +130,20 @@ local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.Color = CurrentAccent
 MainStroke.Thickness = 1.5
 
--- Ограничения и кнопка изменения размера
+-- Ограничения размера
 local SizeConstraint = Instance.new("UISizeConstraint", MainFrame)
 SizeConstraint.MinSize = Vector2.new(450, 300)
 SizeConstraint.MaxSize = Vector2.new(900, 700)
 
+-- Кнопка изменения размера
 local ResizeCorner = Instance.new("TextButton", MainFrame)
 ResizeCorner.Size = UDim2.new(0, 26, 0, 26)
 ResizeCorner.Position = UDim2.new(1, -26, 1, -26)
-ResizeCorner.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+ResizeCorner.BackgroundTransparency = 1
 ResizeCorner.Text = "◢"
-ResizeCorner.TextColor3 = Color3.fromRGB(200, 200, 210)
+ResizeCorner.TextColor3 = Color3.fromRGB(150, 150, 160)
 ResizeCorner.TextSize = 14
-Instance.new("UICorner", ResizeCorner).CornerRadius = UDim.new(0, 6)
+ResizeCorner.ZIndex = 10
 
 local resizing = false
 ResizeCorner.MouseButton1Down:Connect(function() resizing = true end)
@@ -166,7 +167,7 @@ Header.BorderSizePixel = 0
 Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
 
 local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(1, -50, 1, 0)
+Title.Size = UDim2.new(1, -90, 1, 0)
 Title.Position = UDim2.new(0, 16, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "⚡ Quuua-hub | MM2"
@@ -175,6 +176,7 @@ Title.TextSize = 15
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
+-- Кнопка Закрыть
 local CloseBtn = Instance.new("TextButton", Header)
 CloseBtn.Size = UDim2.new(0, 28, 0, 28)
 CloseBtn.Position = UDim2.new(1, -36, 0, 8)
@@ -184,6 +186,43 @@ CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- Компактная кнопка восстановления (Минимизация)
+local MiniBar = Instance.new("TextButton", ScreenGui)
+MiniBar.Size = UDim2.new(0, 160, 0, 40)
+MiniBar.Position = UDim2.new(0.5, -80, 0.05, 0)
+MiniBar.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+MiniBar.Text = "⚡ Quuua-hub"
+MiniBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+MiniBar.TextSize = 14
+MiniBar.Font = Enum.Font.GothamBold
+MiniBar.Visible = false
+MiniBar.Active = true
+MiniBar.Draggable = true
+Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0, 8)
+local MiniBarStroke = Instance.new("UIStroke", MiniBar)
+MiniBarStroke.Color = CurrentAccent
+MiniBarStroke.Thickness = 1.5
+
+-- Кнопка Свернуть (-)
+local MinimizeBtn = Instance.new("TextButton", Header)
+MinimizeBtn.Size = UDim2.new(0, 28, 0, 28)
+MinimizeBtn.Position = UDim2.new(1, -68, 0, 8)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 64)
+MinimizeBtn.Text = "–"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 6)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    MiniBar.Visible = true
+end)
+
+MiniBar.MouseButton1Click:Connect(function()
+    MiniBar.Visible = false
+    MainFrame.Visible = true
+end)
 
 -- Боковое меню
 local Sidebar = Instance.new("ScrollingFrame", MainFrame)
@@ -207,6 +246,7 @@ local interactiveElements = {}
 local function UpdateThemeColor(newColor)
     CurrentAccent = newColor
     MainStroke.Color = newColor
+    MiniBarStroke.Color = newColor
     for _, el in ipairs(interactiveElements) do
         if el and el.Parent then
             el.BackgroundColor3 = newColor
@@ -295,11 +335,10 @@ local function CreateToggle(parent, title, callback)
     end)
 end
 -- =============================================
--- quuu scirpt | Modern MM2 Edition (Part 2: Functions & Logic)
--- TikTok: @symashedshi
+-- Quuua Hub | Modern MM2 Edition (Part 2/2)
 -- =============================================
 
--- ==================== 1. ОБЩЕЕ (ИСПРАВЛЕННЫЙ РОЛЕВОЙ ESP) ====================
+-- ==================== 1. ОБЩЕЕ ====================
 local TabGeneral = CreateTab("🎯 Общее")
 
 CreateToggle(TabGeneral, "ESP (Ролевой: Мурдер-Красный, Шериф-Синий)", function(v)
@@ -313,10 +352,8 @@ CreateToggle(TabGeneral, "ESP (Ролевой: Мурдер-Красный, Ше
                         h = Instance.new("Highlight", p.Character)
                         h.Name = "QuuuaRoleESP"
                     end
-                    
                     local hasKnife = p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife")
                     local hasGun = p.Backpack:FindFirstChild("Gun") or p.Character:FindFirstChild("Gun")
-                    
                     if hasKnife then
                         h.FillColor = Color3.fromRGB(240, 50, 50)
                     elseif hasGun then
@@ -356,8 +393,7 @@ CreateToggle(TabGeneral, "Большие головы (Head Size)", function(v)
     end)
 end)
 
-
--- ==================== 2. КИЛЛЕР (ИСПРАВЛЕНО) ====================
+-- ==================== 2. КИЛЛЕР ====================
 local TabKiller = CreateTab("🔪 Киллер")
 
 CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Удар)", function(v)
@@ -369,11 +405,8 @@ CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Уда�
                     local char = LocalPlayer.Character
                     local rootPart = char and char:FindFirstChild("HumanoidRootPart")
                     local knife = char and char:FindFirstChild("Knife") or LocalPlayer.Backpack:FindFirstChild("Knife")
-                    
                     if rootPart and knife then
-                        if knife.Parent == LocalPlayer.Backpack then
-                            knife.Parent = char
-                        end
+                        if knife.Parent == LocalPlayer.Backpack then knife.Parent = char end
                         for _, p in pairs(Players:GetPlayers()) do
                             if not _G.KillAllActive then break end
                             if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
@@ -397,8 +430,7 @@ CreateToggle(TabKiller, "Тихий аим с помощью ножа", function
     _G.SilentKnifeAimbot = v
 end)
 
-
--- ==================== 3. ШЕРИФ (ИСПРАВЛЕНО) ====================
+-- ==================== 3. ШЕРИФ ====================
 local TabSheriff = CreateTab("🔫 Шериф")
 
 CreateToggle(TabSheriff, "Автоподбор оружия", function(v)
@@ -442,9 +474,7 @@ task.spawn(function()
                     end
                 end
             end
-            if not killerFound then
-                DistanceLabel.Text = "  Дистанция до киллера: Не найден"
-            end
+            if not killerFound then DistanceLabel.Text = "  Дистанция до киллера: Не найден" end
         end)
         task.wait(0.5)
     end
@@ -476,9 +506,7 @@ CreateToggle(TabSheriff, "Авто стрельба [Зациклено]", funct
                 local char = LocalPlayer.Character
                 local gun = char and char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
                 if gun then
-                    if gun.Parent == LocalPlayer.Backpack then
-                        gun.Parent = char
-                    end
+                    if gun.Parent == LocalPlayer.Backpack then gun.Parent = char end
                     for _, p in pairs(Players:GetPlayers()) do
                         if p ~= LocalPlayer and p.Character and (p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife")) then
                             gun:Activate()
@@ -491,139 +519,23 @@ CreateToggle(TabSheriff, "Авто стрельба [Зациклено]", funct
     end)
 end)
 
+-- ==================== 4. ПРИЦЕЛ (CROSSHAIR) ====================
+local TabCrosshair = CreateTab("🎯 Прицел")
 
--- ==================== 4. КНОПКА (ИСПРАВЛЕНО) ====================
-local TabButton = CreateTab("🔘 Кнопка")
-local customShootGui = nil
+local Crosshair = Instance.new("Frame", ScreenGui)
+Crosshair.Size = UDim2.new(0, 16, 0, 2)
+Crosshair.Position = UDim2.new(0.5, -8, 0.5, -1)
+Crosshair.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Crosshair.BorderSizePixel = 0
+Crosshair.Visible = false
 
-CreateToggle(TabButton, "Экранная кнопка 'Shoot'", function(v)
-    if v then
-        customShootGui = Instance.new("ScreenGui", CoreGui)
-        customShootGui.Name = "QuuuaShootScreen"
-        
-        local screenBtn = Instance.new("TextButton", customShootGui)
-        screenBtn.Size = UDim2.new(0, 90, 0, 90)
-        screenBtn.Position = UDim2.new(0.8, 0, 0.6, 0)
-        screenBtn.BackgroundColor3 = CurrentAccent
-        screenBtn.Text = "SHOOT"
-        screenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        screenBtn.TextSize = 14
-        screenBtn.Font = Enum.Font.GothamBold
-        Instance.new("UICorner", screenBtn).CornerRadius = UDim.new(1, 0)
-        
-        screenBtn.MouseButton1Click:Connect(function()
-            pcall(function()
-                local char = LocalPlayer.Character
-                local gun = char and char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
-                if gun then
-                    if gun.Parent == LocalPlayer.Backpack then
-                        gun.Parent = char
-                    end
-                    gun:Activate()
-                end
-            end)
-        end)
-    else
-        if customShootGui then
-            customShootGui:Destroy()
-            customShootGui = nil
-        end
-    end
+local CrosshairV = Instance.new("Frame", Crosshair)
+CrosshairV.Size = UDim2.new(0, 2, 0, 16)
+CrosshairV.Position = UDim2.new(0.5, -1, 0.5, -8)
+CrosshairV.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CrosshairV.BorderSizePixel = 0
+
+CreateToggle(TabCrosshair, "Включить кастомный прицел", function(v)
+    Crosshair.Visible = v
 end)
 
-
--- ==================== 5. ДРУГОЕ ====================
-local TabMisc = CreateTab("⚙️ Другое")
-
-local themeLabel = Instance.new("TextLabel", TabMisc)
-themeLabel.Size = UDim2.new(1, -8, 0, 24)
-themeLabel.BackgroundTransparency = 1
-themeLabel.Text = "  Выберите цвет меню:"
-themeLabel.TextColor3 = Color3.fromRGB(180, 180, 190)
-themeLabel.TextSize = 12
-themeLabel.Font = Enum.Font.GothamBold
-themeLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local colorsList = {"Красный", "Зеленый", "Синий", "Фиолетовый", "Розовый"}
-for _, colorName in ipairs(colorsList) do
-    local cBtn = Instance.new("TextButton", TabMisc)
-    cBtn.Size = UDim2.new(1, -8, 0, 34)
-    cBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-    cBtn.Text = "  🎨 " .. colorName
-    cBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
-    cBtn.TextSize = 12
-    cBtn.Font = Enum.Font.GothamMedium
-    cBtn.TextXAlignment = Enum.TextXAlignment.Left
-    Instance.new("UICorner", cBtn).CornerRadius = UDim.new(0, 6)
-    
-    cBtn.MouseButton1Click:Connect(function()
-        isRGB = false
-        UpdateThemeColor(Themes[colorName])
-    end)
-end
-
-local rgbBtn = Instance.new("TextButton", TabMisc)
-rgbBtn.Size = UDim2.new(1, -8, 0, 34)
-rgbBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-rgbBtn.Text = "  🌈 RGB Режим (Радужный)"
-rgbBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
-rgbBtn.TextSize = 12
-rgbBtn.Font = Enum.Font.GothamMedium
-rgbBtn.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", rgbBtn).CornerRadius = UDim.new(0, 6)
-
-rgbBtn.MouseButton1Click:Connect(function()
-    isRGB = true
-end)
-
-
--- ==================== 6. СОЦ СЕТИ ====================
-local TabSocial = CreateTab("📱 Соц сети")
-
-local tiktokLabel = Instance.new("TextLabel", TabSocial)
-tiktokLabel.Size = UDim2.new(1, -8, 0, 50)
-tiktokLabel.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-tiktokLabel.Text = "Tiktok: @symashedshi"
-tiktokLabel.TextSize = 14
-tiktokLabel.Font = Enum.Font.GothamBold
-Instance.new("UICorner", tiktokLabel).CornerRadius = UDim.new(0, 6)
-
-task.spawn(function()
-    local h = 0
-    while true do
-        h = (h + 0.01) % 1
-        tiktokLabel.TextColor3 = Color3.fromHSV(h, 1, 1)
-        task.wait(0.05)
-    end
-end)
-
-
--- ==================== 7. FILING ====================
-local TabFiling = CreateTab("📂 Filing")
-
-local filingBtn = Instance.new("TextButton", TabFiling)
-filingBtn.Size = UDim2.new(1, -8, 0, 42)
-filingBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
-filingBtn.Text = "  Открыть Filing"
-filingBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
-filingBtn.TextSize = 12
-filingBtn.Font = Enum.Font.GothamMedium
-filingBtn.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", filingBtn).CornerRadius = UDim.new(0, 6)
-
-local errorPopup = Instance.new("TextLabel", MainFrame)
-errorPopup.Size = UDim2.new(0, 260, 0, 40)
-errorPopup.Position = UDim2.new(0.5, -130, 0.85, 0)
-errorPopup.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-errorPopup.Text = "*Находится в разработке*"
-errorPopup.TextColor3 = Color3.fromRGB(255, 255, 255)
-errorPopup.TextSize = 13
-errorPopup.Font = Enum.Font.GothamBold
-errorPopup.Visible = false
-Instance.new("UICorner", errorPopup).CornerRadius = UDim.new(0, 8)
-
-filingBtn.MouseButton1Click:Connect(function()
-    errorPopup.Visible = true
-    task.wait(2)
-    errorPopup.Visible = false
-end)
