@@ -82,7 +82,7 @@ BarFill.ZIndex = 53
 Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
 
 task.spawn(function()
-    LoaderStatus.Text = "Инициализация интерфейса..."
+    LoaderStatus.Text = "Инициализация Quuua-hub..."
     TweenService:Create(BarFill, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Size = UDim2.new(0.4, 0, 1, 0)}):Play()
     task.wait(0.6)
     LoaderStatus.Text = "Загрузка функций MM2..."
@@ -104,16 +104,9 @@ task.spawn(function()
 end)
 
 -- ==================== ПЕРЕМЕННЫЕ И ТЕМЫ ====================
-local CurrentAccent = Color3.fromRGB(240, 60, 60)
-local isRGB = false
-
-local Themes = {
-    ["Красный"] = Color3.fromRGB(240, 60, 60),
-    ["Зеленый"] = Color3.fromRGB(50, 215, 110),
-    ["Синий"] = Color3.fromRGB(60, 150, 255),
-    ["Фиолетовый"] = Color3.fromRGB(175, 70, 255),
-    ["Розовый"] = Color3.fromRGB(255, 105, 180)
-}
+_G.CurrentAccent = Color3.fromRGB(240, 60, 60)
+_G.isRGB = false
+_G.InteractiveElements = {}
 
 -- Главное окно
 local MainFrame = Instance.new("Frame", ScreenGui)
@@ -127,7 +120,7 @@ MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
 local MainStroke = Instance.new("UIStroke", MainFrame)
-MainStroke.Color = CurrentAccent
+MainStroke.Color = _G.CurrentAccent
 MainStroke.Thickness = 1.5
 
 -- Ограничения размера
@@ -135,14 +128,14 @@ local SizeConstraint = Instance.new("UISizeConstraint", MainFrame)
 SizeConstraint.MinSize = Vector2.new(450, 300)
 SizeConstraint.MaxSize = Vector2.new(900, 700)
 
--- Кнопка изменения размера
+-- Удобная кнопка растягивания (правый нижний угол)
 local ResizeCorner = Instance.new("TextButton", MainFrame)
-ResizeCorner.Size = UDim2.new(0, 26, 0, 26)
-ResizeCorner.Position = UDim2.new(1, -26, 1, -26)
+ResizeCorner.Size = UDim2.new(0, 30, 0, 30)
+ResizeCorner.Position = UDim2.new(1, -30, 1, -30)
 ResizeCorner.BackgroundTransparency = 1
 ResizeCorner.Text = "◢"
-ResizeCorner.TextColor3 = Color3.fromRGB(150, 150, 160)
-ResizeCorner.TextSize = 14
+ResizeCorner.TextColor3 = Color3.fromRGB(180, 180, 190)
+ResizeCorner.TextSize = 16
 ResizeCorner.ZIndex = 10
 
 local resizing = false
@@ -187,7 +180,7 @@ CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- Компактная кнопка восстановления (Минимизация)
+-- Прямоугольная плашка сворачивания (смена цвета под акцент)
 local MiniBar = Instance.new("TextButton", ScreenGui)
 MiniBar.Size = UDim2.new(0, 160, 0, 40)
 MiniBar.Position = UDim2.new(0.5, -80, 0.05, 0)
@@ -201,8 +194,9 @@ MiniBar.Active = true
 MiniBar.Draggable = true
 Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0, 8)
 local MiniBarStroke = Instance.new("UIStroke", MiniBar)
-MiniBarStroke.Color = CurrentAccent
+MiniBarStroke.Color = _G.CurrentAccent
 MiniBarStroke.Thickness = 1.5
+table.insert(_G.InteractiveElements, MiniBarStroke)
 
 -- Кнопка Свернуть (-)
 local MinimizeBtn = Instance.new("TextButton", Header)
@@ -241,15 +235,18 @@ ContentArea.Position = UDim2.new(0, 158, 0, 48)
 ContentArea.BackgroundTransparency = 1
 
 local activeTabContainer = nil
-local interactiveElements = {}
 
 local function UpdateThemeColor(newColor)
-    CurrentAccent = newColor
+    _G.CurrentAccent = newColor
     MainStroke.Color = newColor
     MiniBarStroke.Color = newColor
-    for _, el in ipairs(interactiveElements) do
+    for _, el in ipairs(_G.InteractiveElements) do
         if el and el.Parent then
-            el.BackgroundColor3 = newColor
+            if el:IsA("UIStroke") then
+                el.Color = newColor
+            else
+                el.BackgroundColor3 = newColor
+            end
         end
     end
 end
@@ -257,7 +254,7 @@ end
 task.spawn(function()
     local hue = 0
     while true do
-        if isRGB then
+        if _G.isRGB then
             hue = (hue + 0.005) % 1
             UpdateThemeColor(Color3.fromHSV(hue, 1, 1))
         end
@@ -291,13 +288,13 @@ local function CreateTab(name)
         for _, c in pairs(ContentArea:GetChildren()) do if c:IsA("ScrollingFrame") then c.Visible = false end end
         for _, b in pairs(Sidebar:GetChildren()) do if b:IsA("TextButton") then b.TextColor3 = Color3.fromRGB(150, 150, 160) end end
         container.Visible = true
-        tabBtn.TextColor3 = CurrentAccent
+        tabBtn.TextColor3 = _G.CurrentAccent
     end)
 
     if not activeTabContainer then
         activeTabContainer = container
         container.Visible = true
-        tabBtn.TextColor3 = CurrentAccent
+        tabBtn.TextColor3 = _G.CurrentAccent
     end
 
     return container
@@ -329,8 +326,8 @@ local function CreateToggle(parent, title, callback)
         state = not state
         statusBox.Text = state and "ON" or "OFF"
         statusBox.TextColor3 = state and Color3.new(1,1,1) or Color3.fromRGB(140, 140, 150)
-        statusBox.BackgroundColor3 = state and CurrentAccent or Color3.fromRGB(20, 20, 26)
-        if state then table.insert(interactiveElements, statusBox) end
+        statusBox.BackgroundColor3 = state and _G.CurrentAccent or Color3.fromRGB(20, 20, 26)
+        if state then table.insert(_G.InteractiveElements, statusBox) end
         callback(state)
     end)
 end
@@ -341,7 +338,7 @@ end
 -- ==================== 1. ОБЩЕЕ ====================
 local TabGeneral = CreateTab("🎯 Общее")
 
-CreateToggle(TabGeneral, "ESP (Ролевой: Мурдер-Красный, Шериф-Синий)", function(v)
+CreateToggle(TabGeneral, "ESP (Мардер-Красный, Шериф-Синий, Инкон-Зеленый)", function(v)
     _G.GeneralESP = v
     task.spawn(function()
         while _G.GeneralESP do
@@ -396,7 +393,7 @@ end)
 -- ==================== 2. КИЛЛЕР ====================
 local TabKiller = CreateTab("🔪 Киллер")
 
-CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Удар)", function(v)
+CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Удар) [Зациклено]", function(v)
     _G.KillAllActive = v
     if v then
         task.spawn(function()
@@ -519,9 +516,7 @@ CreateToggle(TabSheriff, "Авто стрельба [Зациклено]", funct
     end)
 end)
 
--- ==================== 4. ПРИЦЕЛ (CROSSHAIR) ====================
-local TabCrosshair = CreateTab("🎯 Прицел")
-
+-- Кроссхеир на уровне шифт-лока посередине экрана (в Шерифе)
 local Crosshair = Instance.new("Frame", ScreenGui)
 Crosshair.Size = UDim2.new(0, 16, 0, 2)
 Crosshair.Position = UDim2.new(0.5, -8, 0.5, -1)
@@ -535,7 +530,153 @@ CrosshairV.Position = UDim2.new(0.5, -1, 0.5, -8)
 CrosshairV.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 CrosshairV.BorderSizePixel = 0
 
-CreateToggle(TabCrosshair, "Включить кастомный прицел", function(v)
+CreateToggle(TabSheriff, "Прицел (Crosshair)", function(v)
     Crosshair.Visible = v
 end)
 
+local CrosshairColorBtn = Instance.new("TextButton", TabSheriff)
+CrosshairColorBtn.Size = UDim2.new(1, -8, 0, 38)
+CrosshairColorBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+CrosshairColorBtn.Text = "  Покрасить прицел в цвет меню"
+CrosshairColorBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
+CrosshairColorBtn.TextSize = 12
+CrosshairColorBtn.Font = Enum.Font.GothamMedium
+Instance.new("UICorner", CrosshairColorBtn).CornerRadius = UDim.new(0, 6)
+
+CrosshairColorBtn.MouseButton1Click:Connect(function()
+    Crosshair.BackgroundColor3 = _G.CurrentAccent
+    CrosshairV.BackgroundColor3 = _G.CurrentAccent
+end)
+
+-- ==================== 4. КНОПКА SHOOT (ЭКРАННАЯ) ====================
+local TabButton = CreateTab("🔘 Кнопка Shoot")
+
+local ScreenShootBtn = Instance.new("TextButton", ScreenGui)
+ScreenShootBtn.Size = UDim2.new(0, 100, 0, 50)
+ScreenShootBtn.Position = UDim2.new(0.85, -50, 0.7, -25)
+ScreenShootBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+ScreenShootBtn.Text = "SHOOT"
+ScreenShootBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ScreenShootBtn.TextSize = 16
+ScreenShootBtn.Font = Enum.Font.GothamBold
+ScreenShootBtn.Visible = false
+ScreenShootBtn.Active = true
+ScreenShootBtn.Draggable = true
+Instance.new("UICorner", ScreenShootBtn).CornerRadius = UDim.new(0, 10)
+
+ScreenShootBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local char = LocalPlayer.Character
+        local gun = char and char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
+        if gun then
+            if gun.Parent == LocalPlayer.Backpack then gun.Parent = char end
+            gun:Activate()
+        end
+    end)
+end)
+
+CreateToggle(TabButton, "Показать экранную кнопку SHOOT", function(v)
+    ScreenShootBtn.Visible = v
+end)
+
+-- ==================== 5. ДРУГОЕ (ЦВЕТА И RGB) ====================
+local TabOther = CreateTab("🎨 Другое")
+
+local function AddColorBtn(name, color)
+    local btn = Instance.new("TextButton", TabOther)
+    btn.Size = UDim2.new(1, -8, 0, 36)
+    btn.BackgroundColor3 = color
+    btn.Text = "  Цвет: " .. name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(function()
+        _G.isRGB = false
+        UpdateThemeColor(color)
+    end)
+end
+
+AddColorBtn("Красный (Основной)", Color3.fromRGB(240, 60, 60))
+AddColorBtn("Зеленый", Color3.fromRGB(50, 215, 110))
+AddColorBtn("Синий", Color3.fromRGB(60, 150, 255))
+AddColorBtn("Фиолетовый", Color3.fromRGB(175, 70, 255))
+AddColorBtn("Розовый", Color3.fromRGB(255, 105, 180))
+
+CreateToggle(TabOther, "RGB Цвет (Радужный интерфейс)", function(v)
+    _G.isRGB = v
+end)
+
+-- ==================== 6. СОЦСЕТИ ====================
+local TabSocial = CreateTab("📱 Соцсети")
+
+local SocialLabel = Instance.new("TextLabel", TabSocial)
+SocialLabel.Size = UDim2.new(1, -8, 0, 50)
+SocialLabel.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+SocialLabel.Text = "TikTok: @symashedshi"
+SocialLabel.TextSize = 16
+SocialLabel.Font = Enum.Font.GothamBold
+Instance.new("UICorner", SocialLabel).CornerRadius = UDim.new(0, 6)
+
+task.spawn(function()
+    local hue = 0
+    while true do
+        hue = (hue + 0.01) % 1
+        SocialLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
+        task.wait(0.03)
+    end
+end)
+
+-- ==================== 7. FILING (ОШИБКА) ====================
+local TabFiling = CreateTab("📁 Filing")
+
+local FilingBtn = Instance.new("TextButton", TabFiling)
+FilingBtn.Size = UDim2.new(1, -8, 0, 38)
+FilingBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+FilingBtn.Text = "  Открыть Filing"
+FilingBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
+FilingBtn.TextSize = 12
+FilingBtn.Font = Enum.Font.GothamMedium
+Instance.new("UICorner", FilingBtn).CornerRadius = UDim.new(0, 6)
+
+FilingBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local errGui = Instance.new("ScreenGui", CoreGui)
+        local errFrame = Instance.new("Frame", errGui)
+        errFrame.Size = UDim2.new(0, 300, 0, 100)
+        errFrame.Position = UDim2.new(0.5, -150, 0.5, -50)
+        errFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        Instance.new("UICorner", errFrame).CornerRadius = UDim.new(0, 8)
+        
+        local errText = Instance.new("TextLabel", errFrame)
+        errText.Size = UDim2.new(1, 0, 1, 0)
+        errText.BackgroundTransparency = 1
+        errText.Text = "❌ Ошибка: Файл не найден или поврежден!"
+        errText.TextColor3 = Color3.fromRGB(240, 60, 60)
+        errText.TextSize = 13
+        errText.Font = Enum.Font.GothamBold
+        
+        task.wait(2)
+        errGui:Destroy()
+    end)
+end)
+
+-- ==================== 8. РАСТЯГ (ЭКРАНА И МЕНЮ) ====================
+local TabStretch = CreateTab("📐 Растяг")
+
+local StretchLabel = Instance.new("TextLabel", TabStretch)
+StretchLabel.Size = UDim2.new(1, -8, 0, 38)
+StretchLabel.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+StretchLabel.Text = "  Настройки растяжения экрана"
+StretchLabel.TextColor3 = Color3.fromRGB(230, 230, 240)
+StretchLabel.TextSize = 12
+StretchLabel.Font = Enum.Font.GothamMedium
+Instance.new("UICorner", StretchLabel).CornerRadius = UDim.new(0, 6)
+
+CreateToggle(TabStretch, "Включить кастомный растяг экрана", function(v)
+    if v then
+        Camera.FieldOfView = 95
+    else
+        Camera.FieldOfView = 70
+    end
+end)
