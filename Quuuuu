@@ -27,7 +27,7 @@ _G.CurrentAccent = Color3.fromRGB(240, 60, 60)
 _G.isRGB = false
 _G.InteractiveElements = {}
 
--- Главное окно (без растягивания для надежности кнопок)
+-- Главное окно
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 520, 0, 340)
@@ -60,7 +60,7 @@ Title.TextSize = 14
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- СТИЛЬНАЯ ПЛАШКА СВОРАЧИВАНИЯ (С ОБОЛОЧКОЙ И ПРЯМОУГОЛЬНИКОМ)
+-- Плашка сворачивания
 local MiniBar = Instance.new("TextButton", ScreenGui)
 MiniBar.Name = "QuuuaMiniBar"
 MiniBar.Size = UDim2.new(0, 160, 0, 40)
@@ -93,7 +93,7 @@ Instance.new("UIStroke", CloseBtn).Color = Color3.fromRGB(255, 100, 100)
 
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- Кнопка Свернуть (-)
+-- Кнопка Свернуть
 local MinimizeBtn = Instance.new("TextButton", Header)
 MinimizeBtn.Size = UDim2.new(0, 26, 0, 26)
 MinimizeBtn.Position = UDim2.new(1, -64, 0, 7)
@@ -328,7 +328,7 @@ CreateToggle(TabKiller, "Убить всех сразу (Убийца)", functio
             while _G.KillAllActive do
                 pcall(function()
                     local char = LocalPlayer.Character
-                    local rootPart = char and char:FindFirstChild("HumanoidRootRootPart") or char:FindFirstChild("HumanoidRootPart")
+                    local rootPart = char and char:FindFirstChild("HumanoidRootPart")
                     local knife = char and char:FindFirstChild("Knife") or LocalPlayer.Backpack:FindFirstChild("Knife")
                     if rootPart and knife then
                         if knife.Parent == LocalPlayer.Backpack then knife.Parent = char end
@@ -393,7 +393,6 @@ CreateToggle(TabSheriff, "Автоподбор оружия", function(v)
     end)
 end)
 
--- ИСПРАВЛЕННЫЙ ФИЛЛИНГ ШЕРИФА (Кнопка телепорта дропа к себе)
 local SheriffFillingBtn = Instance.new("TextButton", TabSheriff)
 SheriffFillingBtn.Size = UDim2.new(1, -6, 0, 34)
 SheriffFillingBtn.BackgroundColor3 = Color3.fromRGB(60, 150, 255)
@@ -503,7 +502,6 @@ end)
 -- ==================== 4. КНОПКА SHOOT ====================
 local TabButton = CreateTab("🔘 Кнопка Shoot")
 
--- ПОЛНОСТЬЮ ПЕРЕРАБОТАННАЯ ЭКРАННАЯ КНОПКА SHOOT
 local ScreenShootBtn = Instance.new("TextButton", ScreenGui)
 ScreenShootBtn.Size = UDim2.new(0, 110, 0, 50)
 ScreenShootBtn.Position = UDim2.new(0.8, -55, 0.6, -25)
