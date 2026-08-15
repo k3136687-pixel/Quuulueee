@@ -1,0 +1,596 @@
+-- =============================================
+-- Quuua Hub | Modern MM2 Edition (Part 1: UI & Core)
+-- TikTok: @symashedshi
+-- =============================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- Создаем ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "QuuuaHub_Modern"
+ScreenGui.ResetOnSpawn = false
+
+local success = pcall(function()
+    ScreenGui.Parent = CoreGui
+end)
+if not success then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- ==================== ЗАГРУЗЧИК ====================
+local BlurOverlay = Instance.new("Frame", ScreenGui)
+BlurOverlay.Size = UDim2.new(1, 0, 1, 0)
+BlurOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+BlurOverlay.BackgroundTransparency = 0.5
+BlurOverlay.BorderSizePixel = 0
+BlurOverlay.ZIndex = 50
+
+local LoaderFrame = Instance.new("Frame", BlurOverlay)
+LoaderFrame.Size = UDim2.new(0, 340, 0, 170)
+LoaderFrame.Position = UDim2.new(0.5, -170, 0.5, -85)
+LoaderFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+LoaderFrame.BorderSizePixel = 0
+LoaderFrame.ZIndex = 51
+Instance.new("UICorner", LoaderFrame).CornerRadius = UDim.new(0, 14)
+
+local LoaderStroke = Instance.new("UIStroke", LoaderFrame)
+LoaderStroke.Color = Color3.fromRGB(240, 60, 60)
+LoaderStroke.Thickness = 1.5
+
+local LoaderTitle = Instance.new("TextLabel", LoaderFrame)
+LoaderTitle.Size = UDim2.new(1, 0, 0, 45)
+LoaderTitle.Position = UDim2.new(0, 0, 0, 15)
+LoaderTitle.BackgroundTransparency = 1
+LoaderTitle.Text = "⚡ Quuua-hub"
+LoaderTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoaderTitle.TextSize = 22
+LoaderTitle.Font = Enum.Font.GothamBold
+LoaderTitle.ZIndex = 52
+
+local LoaderStatus = Instance.new("TextLabel", LoaderFrame)
+LoaderStatus.Size = UDim2.new(1, 0, 0, 20)
+LoaderStatus.Position = UDim2.new(0, 0, 0, 60)
+LoaderStatus.BackgroundTransparency = 1
+LoaderStatus.Text = "Загрузка..."
+LoaderStatus.TextColor3 = Color3.fromRGB(150, 150, 160)
+LoaderStatus.TextSize = 13
+LoaderStatus.Font = Enum.Font.GothamMedium
+LoaderStatus.ZIndex = 52
+
+local BarBg = Instance.new("Frame", LoaderFrame)
+BarBg.Size = UDim2.new(0, 280, 0, 8)
+BarBg.Position = UDim2.new(0.5, -140, 0, 115)
+BarBg.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+BarBg.BorderSizePixel = 0
+BarBg.ZIndex = 52
+Instance.new("UICorner", BarBg).CornerRadius = UDim.new(1, 0)
+
+local BarFill = Instance.new("Frame", BarBg)
+BarFill.Size = UDim2.new(0, 0, 1, 0)
+BarFill.BackgroundColor3 = Color3.fromRGB(240, 60, 60)
+BarFill.BorderSizePixel = 0
+BarFill.ZIndex = 53
+Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
+
+task.spawn(function()
+    LoaderStatus.Text = "Инициализация интерфейса..."
+    TweenService:Create(BarFill, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Size = UDim2.new(0.4, 0, 1, 0)}):Play()
+    task.wait(0.6)
+    LoaderStatus.Text = "Загрузка функций MM2..."
+    TweenService:Create(BarFill, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {Size = UDim2.new(0.8, 0, 1, 0)}):Play()
+    task.wait(0.7)
+    LoaderStatus.Text = "Готово!"
+    TweenService:Create(BarFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.new(1, 0, 1, 0)}):Play()
+    task.wait(0.4)
+    
+    local info = TweenInfo.new(0.4, Enum.EasingStyle.Quad)
+    TweenService:Create(LoaderFrame, info, {BackgroundTransparency = 1}):Play()
+    TweenService:Create(BlurOverlay, info, {BackgroundTransparency = 1}):Play()
+    for _, c in pairs(LoaderFrame:GetDescendants()) do
+        if c:IsA("TextLabel") then TweenService:Create(c, info, {TextTransparency = 1}):Play()
+        elseif c:IsA("Frame") then TweenService:Create(c, info, {BackgroundTransparency = 1}):Play() end
+    end
+    task.wait(0.4)
+    BlurOverlay:Destroy()
+end)
+
+-- ==================== ПЕРЕМЕННЫЕ И ТЕМЫ ====================
+local CurrentAccent = Color3.fromRGB(240, 60, 60) -- Стандартный красный
+local isRGB = false
+
+local Themes = {
+    ["Красный"] = Color3.fromRGB(240, 60, 60),
+    ["Зеленый"] = Color3.fromRGB(50, 215, 110),
+    ["Синий"] = Color3.fromRGB(60, 150, 255),
+    ["Фиолетовый"] = Color3.fromRGB(175, 70, 255),
+    ["Розовый"] = Color3.fromRGB(255, 105, 180)
+}
+
+-- Главное окно
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 560, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -280, 0.5, -190)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = CurrentAccent
+MainStroke.Thickness = 1.5
+
+-- Возможность растягивать окно
+local SizeConstraint = Instance.new("UISizeConstraint", MainFrame)
+SizeConstraint.MinSize = Vector2.new(450, 300)
+SizeConstraint.MaxSize = Vector2.new(900, 700)
+
+local ResizeCorner = Instance.new("TextButton", MainFrame)
+ResizeCorner.Size = UDim2.new(0, 16, 0, 16)
+ResizeCorner.Position = UDim2.new(1, -16, 1, -16)
+ResizeCorner.BackgroundTransparency = 1
+ResizeCorner.Text = "◢"
+ResizeCorner.TextColor3 = Color3.fromRGB(100, 100, 110)
+ResizeCorner.TextSize = 12
+
+local resizing = false
+ResizeCorner.MouseButton1Down:Connect(function() resizing = true end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then resizing = false end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mousePos = UserInputService:GetMouseLocation()
+        local newX = math.clamp(mousePos.X - MainFrame.AbsolutePosition.X, 450, 900)
+        local newY = math.clamp(mousePos.Y - MainFrame.AbsolutePosition.Y, 300, 700)
+        MainFrame.Size = UDim2.new(0, newX, 0, newY)
+    end
+end)
+
+-- Шапка
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 44)
+Header.BackgroundColor3 = Color3.fromRGB(24, 24, 32)
+Header.BorderSizePixel = 0
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(1, -50, 1, 0)
+Title.Position = UDim2.new(0, 16, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "⚡ Quuua-hub | MM2"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Size = UDim2.new(0, 28, 0, 28)
+CloseBtn.Position = UDim2.new(1, -36, 0, 8)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- Боковое меню
+local Sidebar = Instance.new("ScrollingFrame", MainFrame)
+Sidebar.Size = UDim2.new(0, 145, 1, -54)
+Sidebar.Position = UDim2.new(0, 8, 0, 48)
+Sidebar.BackgroundTransparency = 1
+Sidebar.ScrollBarThickness = 2
+
+local SidebarLayout = Instance.new("UIListLayout", Sidebar)
+SidebarLayout.Padding = UDim.new(0, 4)
+
+-- Область контента
+local ContentArea = Instance.new("Frame", MainFrame)
+ContentArea.Size = UDim2.new(1, -163, 1, -54)
+ContentArea.Position = UDim2.new(0, 158, 0, 48)
+ContentArea.BackgroundTransparency = 1
+
+local activeTabContainer = nil
+local interactiveElements = {}
+
+local function UpdateThemeColor(newColor)
+    CurrentAccent = newColor
+    MainStroke.Color = newColor
+    for _, el in ipairs(interactiveElements) do
+        if el and el.Parent then
+            el.BackgroundColor3 = newColor
+        end
+    end
+end
+
+task.spawn(function()
+    local hue = 0
+    while true do
+        if isRGB then
+            hue = (hue + 0.005) % 1
+            UpdateThemeColor(Color3.fromHSV(hue, 1, 1))
+        end
+        task.wait(0.03)
+    end
+end)
+
+local function CreateTab(name)
+    local tabBtn = Instance.new("TextButton", Sidebar)
+    tabBtn.Size = UDim2.new(1, -4, 0, 36)
+    tabBtn.BackgroundTransparency = 1
+    tabBtn.Text = "  " .. name
+    tabBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
+    tabBtn.TextSize = 12
+    tabBtn.Font = Enum.Font.GothamBold
+    tabBtn.TextXAlignment = Enum.TextXAlignment.Left
+
+    local container = Instance.new("ScrollingFrame", ContentArea)
+    container.Size = UDim2.new(1, 0, 1, 0)
+    container.BackgroundTransparency = 1
+    container.ScrollBarThickness = 3
+    container.Visible = false
+
+    local list = Instance.new("UIListLayout", container)
+    list.Padding = UDim.new(0, 6)
+    list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        container.CanvasSize = UDim2.new(0, 0, 0, list.AbsoluteContentSize.Y + 12)
+    end)
+
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, c in pairs(ContentArea:GetChildren()) do if c:IsA("ScrollingFrame") then c.Visible = false end end
+        for _, b in pairs(Sidebar:GetChildren()) do if b:IsA("TextButton") then b.TextColor3 = Color3.fromRGB(150, 150, 160) end end
+        container.Visible = true
+        tabBtn.TextColor3 = CurrentAccent
+    end)
+
+    if not activeTabContainer then
+        activeTabContainer = container
+        container.Visible = true
+        tabBtn.TextColor3 = CurrentAccent
+    end
+
+    return container
+end
+
+local function CreateToggle(parent, title, callback)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(1, -8, 0, 38)
+    btn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+    btn.Text = "  " .. title
+    btn.TextColor3 = Color3.fromRGB(230, 230, 240)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamMedium
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+    local statusBox = Instance.new("TextLabel", btn)
+    statusBox.Size = UDim2.new(0, 44, 0, 22)
+    statusBox.Position = UDim2.new(1, -50, 0.5, -11)
+    statusBox.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+    statusBox.Text = "OFF"
+    statusBox.TextColor3 = Color3.fromRGB(140, 140, 150)
+    statusBox.TextSize = 10
+    statusBox.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", statusBox).CornerRadius = UDim.new(0, 5)
+
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        statusBox.Text = state and "ON" or "OFF"
+        statusBox.TextColor3 = state and Color3.new(1,1,1) or Color3.fromRGB(140, 140, 150)
+        statusBox.BackgroundColor3 = state and CurrentAccent or Color3.fromRGB(20, 20, 26)
+        if state then table.insert(interactiveElements, statusBox) end
+        callback(state)
+    end)
+end
+-- 1. ОБЩЕЕ
+local TabGeneral = CreateTab("🎯 Общее")
+CreateToggle(TabGeneral, "ESP (Подсветка игроков)", function(v)
+    _G.GeneralESP = v
+    task.spawn(function()
+        while _G.GeneralESP do
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character then
+                    local h = p.Character:FindFirstChild("QuuuaGeneralESP")
+                    if not h then
+                        h = Instance.new("Highlight", p.Character)
+                        h.Name = "QuuuaGeneralESP"
+                    end
+                    h.FillColor = CurrentAccent
+                end
+            end
+            task.wait(1)
+        end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character then
+                local h = p.Character:FindFirstChild("QuuuaGeneralESP")
+                if h then h:Destroy() end
+            end
+        end
+    end)
+end)
+
+CreateToggle(TabGeneral, "Aimbot (Общий)", function(v)
+    _G.GeneralAimbot = v
+end)
+
+CreateToggle(TabGeneral, "Большие головы (Head Size)", function(v)
+    _G.BigHeads = v
+    task.spawn(function()
+        while _G.BigHeads do
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                    p.Character.Head.Size = Vector3.new(3, 3, 3)
+                    p.Character.Head.CanCollide = false
+                end
+            end
+            task.wait(1)
+        end
+    end)
+end)
+
+
+-- 2. КИЛЛЕР
+local TabKiller = CreateTab("🔪 Киллер")
+
+CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Удар)", function(v)
+    _G.KillAllActive = v
+    if v then
+        task.spawn(function()
+            while _G.KillAllActive do
+                local char = LocalPlayer.Character
+                local knife = char and (char:FindFirstChild("Knife") or LocalPlayer.Backpack:FindFirstChild("Knife"))
+                if char and knife then
+                    knife.Parent = char
+                    for _, p in pairs(Players:GetPlayers()) do
+                        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1)
+                            knife:Activate()
+                            task.wait(0.12)
+                        end
+                    end
+                end
+                task.wait(0.2)
+            end
+        end)
+    end
+end)
+
+CreateToggle(TabKiller, "Тихий аим с помощью ножа", function(v)
+    _G.SilentKnifeAimbot = v
+end)
+
+
+-- 3. ШЕРИФ
+local TabSheriff = CreateTab("🔫 Шериф")
+
+CreateToggle(TabSheriff, "Автоподбор оружия", function(v)
+    _G.AutoPickupGun = v
+    task.spawn(function()
+        while _G.AutoPickupGun do
+            pcall(function()
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj.Name == "GunDrop" and obj:IsA("BasePart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = obj.CFrame
+                    end
+                end
+            end)
+            task.wait(0.5)
+        end
+    end)
+end)
+
+local DistanceLabel = Instance.new("TextLabel", TabSheriff)
+DistanceLabel.Size = UDim2.new(1, -8, 0, 38)
+DistanceLabel.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+DistanceLabel.Text = "  Дистанция до киллера: Поиск..."
+DistanceLabel.TextColor3 = Color3.fromRGB(230, 230, 240)
+DistanceLabel.TextSize = 12
+DistanceLabel.Font = Enum.Font.GothamMedium
+DistanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", DistanceLabel).CornerRadius = UDim.new(0, 6)
+
+task.spawn(function()
+    while true do
+        pcall(function()
+            local killerFound = false
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    if p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife") then
+                        killerFound = true
+                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                            DistanceLabel.Text = string.Format("  Дистанция до киллера: %.1f м", dist)
+                        end
+                    end
+                end
+            end
+            if not killerFound then
+                DistanceLabel.Text = "  Дистанция до киллера: Не найден"
+            end
+        end)
+        task.wait(0.5)
+    end
+end)
+
+CreateToggle(TabSheriff, "Аим бот (Шериф) [Зациклено]", function(v)
+    _G.SheriffAimbot = v
+    task.spawn(function()
+        while _G.SheriffAimbot do
+            pcall(function()
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                        if p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife") then
+                            Camera.CFrame = CFrame.new(Camera.CFrame.Position, p.Character.Head.Position)
+                        end
+                    end
+                end
+            end)
+            task.wait()
+        end
+    end)
+end)
+
+CreateToggle(TabSheriff, "Авто стрельба [Зациклено]", function(v)
+    _G.AutoShoot = v
+    task.spawn(function()
+        while _G.AutoShoot do
+            pcall(function()
+                local char = LocalPlayer.Character
+                local gun = char and (char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun"))
+                if gun then
+                    gun.Parent = char
+                    for _, p in pairs(Players:GetPlayers()) do
+                        if p ~= LocalPlayer and p.Character and (p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife")) then
+                            gun:Activate()
+                        end
+                    end
+                end
+            end)
+            task.wait(0.2)
+        end
+    end)
+end)
+
+
+-- 4. КНОПКА
+local TabButton = CreateTab("🔘 Кнопка")
+local customShootGui = nil
+
+CreateToggle(TabButton, "Экранная кнопка 'Shoot'", function(v)
+    if v then
+        customShootGui = Instance.new("ScreenGui", CoreGui)
+        customShootGui.Name = "QuuuaShootScreen"
+        
+        local screenBtn = Instance.new("TextButton", customShootGui)
+        screenBtn.Size = UDim2.new(0, 90, 0, 90)
+        screenBtn.Position = UDim2.new(0.8, 0, 0.6, 0)
+        screenBtn.BackgroundColor3 = CurrentAccent
+        screenBtn.Text = "SHOOT"
+        screenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        screenBtn.TextSize = 14
+        screenBtn.Font = Enum.Font.GothamBold
+        Instance.new("UICorner", screenBtn).CornerRadius = UDim.new(1, 0)
+        
+        screenBtn.MouseButton1Click:Connect(function()
+            pcall(function()
+                local char = LocalPlayer.Character
+                local gun = char and (char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun"))
+                if gun then
+                    gun.Parent = char
+                    gun:Activate()
+                end
+            end)
+        end)
+    else
+        if customShootGui then
+            customShootGui:Destroy()
+            customShootGui = nil
+        end
+    end
+end)
+
+
+-- 5. ДРУГОЕ
+local TabMisc = CreateTab("⚙️ Другое")
+
+local themeLabel = Instance.new("TextLabel", TabMisc)
+themeLabel.Size = UDim2.new(1, -8, 0, 24)
+themeLabel.BackgroundTransparency = 1
+themeLabel.Text = "  Выберите цвет меню:"
+themeLabel.TextColor3 = Color3.fromRGB(180, 180, 190)
+themeLabel.TextSize = 12
+themeLabel.Font = Enum.Font.GothamBold
+themeLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local colorsList = {"Красный", "Зеленый", "Синий", "Фиолетовый", "Розовый"}
+for _, colorName in ipairs(colorsList) do
+    local cBtn = Instance.new("TextButton", TabMisc)
+    cBtn.Size = UDim2.new(1, -8, 0, 34)
+    cBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+    cBtn.Text = "  🎨 " .. colorName
+    cBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
+    cBtn.TextSize = 12
+    cBtn.Font = Enum.Font.GothamMedium
+    cBtn.TextXAlignment = Enum.TextXAlignment.Left
+    Instance.new("UICorner", cBtn).CornerRadius = UDim.new(0, 6)
+    
+    cBtn.MouseButton1Click:Connect(function()
+        isRGB = false
+        UpdateThemeColor(Themes[colorName])
+    end)
+end
+
+local rgbBtn = Instance.new("TextButton", TabMisc)
+rgbBtn.Size = UDim2.new(1, -8, 0, 34)
+rgbBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+rgbBtn.Text = "  🌈 RGB Режим (Радужный)"
+rgbBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
+rgbBtn.TextSize = 12
+rgbBtn.Font = Enum.Font.GothamMedium
+rgbBtn.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", rgbBtn).CornerRadius = UDim.new(0, 6)
+
+rgbBtn.MouseButton1Click:Connect(function()
+    isRGB = true
+end)
+
+
+-- 6. СОЦ СЕТИ
+local TabSocial = CreateTab("📱 Соц сети")
+
+local tiktokLabel = Instance.new("TextLabel", TabSocial)
+tiktokLabel.Size = UDim2.new(1, -8, 0, 50)
+tiktokLabel.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+tiktokLabel.Text = "Tiktok: @symashedshi"
+tiktokLabel.TextSize = 14
+tiktokLabel.Font = Enum.Font.GothamBold
+Instance.new("UICorner", tiktokLabel).CornerRadius = UDim.new(0, 6)
+
+task.spawn(function()
+    local h = 0
+    while true do
+        h = (h + 0.01) % 1
+        tiktokLabel.TextColor3 = Color3.fromHSV(h, 1, 1)
+        task.wait(0.05)
+    end
+end)
+
+
+-- 7. FILING
+local TabFiling = CreateTab("📂 Filing")
+
+local filingBtn = Instance.new("TextButton", TabFiling)
+filingBtn.Size = UDim2.new(1, -8, 0, 42)
+filingBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
+filingBtn.Text = "  Открыть Filing"
+filingBtn.TextColor3 = Color3.fromRGB(230, 230, 240)
+filingBtn.TextSize = 12
+filingBtn.Font = Enum.Font.GothamMedium
+filingBtn.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", filingBtn).CornerRadius = UDim.new(0, 6)
+
+local errorPopup = Instance.new("TextLabel", MainFrame)
+errorPopup.Size = UDim2.new(0, 260, 0, 40)
+errorPopup.Position = UDim2.new(0.5, -130, 0.85, 0)
+errorPopup.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+errorPopup.Text = "*Находится в разработке*"
+errorPopup.TextColor3 = Color3.fromRGB(255, 255, 255)
+errorPopup.TextSize = 13
+errorPopup.Font = Enum.Font.GothamBold
+errorPopup.Visible = false
+Instance.new("UICorner", errorPopup).CornerRadius = UDim.new(0, 8)
+
+filingBtn.MouseButton1Click:Connect(function()
+    errorPopup.Visible = true
+    task.wait(2)
+    errorPopup.Visible = false
+end)
