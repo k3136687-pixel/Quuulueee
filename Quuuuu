@@ -1,5 +1,5 @@
 -- =============================================
--- Quuua Hub | Modern MM2 Edition (Part 1/2)
+-- Quuua Hub | Modern MM2 Edition (Part 1/2) - Fixed
 -- TikTok: @symashedshi
 -- =============================================
 
@@ -85,7 +85,7 @@ task.spawn(function()
     LoaderStatus.Text = "Инициализация Quuua-hub..."
     TweenService:Create(BarFill, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Size = UDim2.new(0.4, 0, 1, 0)}):Play()
     task.wait(0.6)
-    LoaderStatus.Text = "Загрузка функций MM2..."
+    LoaderStatus.Text = "Загрузка исправленных функций..."
     TweenService:Create(BarFill, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {Size = UDim2.new(0.8, 0, 1, 0)}):Play()
     task.wait(0.7)
     LoaderStatus.Text = "Готово!"
@@ -128,7 +128,7 @@ local SizeConstraint = Instance.new("UISizeConstraint", MainFrame)
 SizeConstraint.MinSize = Vector2.new(450, 300)
 SizeConstraint.MaxSize = Vector2.new(900, 700)
 
--- Удобная кнопка растягивания (правый нижний угол)
+-- Кнопка растягивания (правый нижний угол)
 local ResizeCorner = Instance.new("TextButton", MainFrame)
 ResizeCorner.Size = UDim2.new(0, 30, 0, 30)
 ResizeCorner.Position = UDim2.new(1, -30, 1, -30)
@@ -180,11 +180,11 @@ CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- Прямоугольная плашка сворачивания (смена цвета под акцент)
+-- Плашка сворачивания (теперь полностью заливается цветом темы)
 local MiniBar = Instance.new("TextButton", ScreenGui)
 MiniBar.Size = UDim2.new(0, 160, 0, 40)
 MiniBar.Position = UDim2.new(0.5, -80, 0.05, 0)
-MiniBar.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+MiniBar.BackgroundColor3 = _G.CurrentAccent
 MiniBar.Text = "⚡ Quuua-hub"
 MiniBar.TextColor3 = Color3.fromRGB(255, 255, 255)
 MiniBar.TextSize = 14
@@ -193,10 +193,7 @@ MiniBar.Visible = false
 MiniBar.Active = true
 MiniBar.Draggable = true
 Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0, 8)
-local MiniBarStroke = Instance.new("UIStroke", MiniBar)
-MiniBarStroke.Color = _G.CurrentAccent
-MiniBarStroke.Thickness = 1.5
-table.insert(_G.InteractiveElements, MiniBarStroke)
+table.insert(_G.InteractiveElements, MiniBar)
 
 -- Кнопка Свернуть (-)
 local MinimizeBtn = Instance.new("TextButton", Header)
@@ -239,7 +236,6 @@ local activeTabContainer = nil
 local function UpdateThemeColor(newColor)
     _G.CurrentAccent = newColor
     MainStroke.Color = newColor
-    MiniBarStroke.Color = newColor
     for _, el in ipairs(_G.InteractiveElements) do
         if el and el.Parent then
             if el:IsA("UIStroke") then
@@ -332,7 +328,7 @@ local function CreateToggle(parent, title, callback)
     end)
 end
 -- =============================================
--- Quuua Hub | Modern MM2 Edition (Part 2/2)
+-- Quuua Hub | Modern MM2 Edition (Part 2/2) - Fixed
 -- =============================================
 
 -- ==================== 1. ОБЩЕЕ ====================
@@ -371,8 +367,39 @@ CreateToggle(TabGeneral, "ESP (Мардер-Красный, Шериф-Сини�
     end)
 end)
 
+-- Исправленный общий аимбот (наводка по зажатию ПКМ или авто)
 CreateToggle(TabGeneral, "Aimbot (Общий)", function(v)
     _G.GeneralAimbot = v
+    task.spawn(function()
+        while _G.GeneralAimbot do
+            pcall(function()
+                local nearestPlayer = nil
+                local shortestDist = math.huge
+                local mousePos = UserInputService:GetMouseLocation()
+                
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                        local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                        if hum and hum.Health > 0 then
+                            local screenPos, onScreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
+                            if onScreen then
+                                local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                                if dist < shortestDist then
+                                    shortestDist = dist
+                                    nearestPlayer = p
+                                end
+                            end
+                        end
+                    end
+                end
+                
+                if nearestPlayer and nearestPlayer.Character and nearestPlayer.Character:FindFirstChild("Head") then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, nearestPlayer.Character.Head.Position)
+                end
+            end)
+            task.wait()
+        end
+    end)
 end)
 
 CreateToggle(TabGeneral, "Большие головы (Head Size)", function(v)
@@ -390,10 +417,25 @@ CreateToggle(TabGeneral, "Большие головы (Head Size)", function(v)
     end)
 end)
 
+-- Добавленный Ноклип
+CreateToggle(TabGeneral, "Ноклип (Проход сквозь стены)", function(v)
+    _G.NoclipActive = v
+    RunService.Stepped:Connect(function()
+        if _G.NoclipActive and LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end)
+end)
+
 -- ==================== 2. КИЛЛЕР ====================
 local TabKiller = CreateTab("🔪 Киллер")
 
-CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Удар) [Зациклено]", function(v)
+-- Исправленный и стабильный Kill All (Авто-ТП + Удар)
+CreateToggle(TabKiller, "Убить всех сразу [Зациклено]", function(v)
     _G.KillAllActive = v
     if v then
         task.spawn(function()
@@ -409,15 +451,15 @@ CreateToggle(TabKiller, "Убить всех сразу (Авто-ТП + Уда�
                             if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
                                 local targetHumanoid = p.Character:FindFirstChildOfClass("Humanoid")
                                 if targetHumanoid and targetHumanoid.Health > 0 then
-                                    rootPart.CFrame = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1.5)
+                                    rootPart.CFrame = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1.2)
                                     knife:Activate()
-                                    task.wait(0.1)
+                                    task.wait(0.15)
                                 end
                             end
                         end
                     end
                 end)
-                task.wait(0.3)
+                task.wait(0.2)
             end
         end)
     end
@@ -477,6 +519,7 @@ task.spawn(function()
     end
 end)
 
+-- Исправленный аимбот на шерифа (наводит камеру именно на убийцу)
 CreateToggle(TabSheriff, "Аим бот (Шериф) [Зациклено]", function(v)
     _G.SheriffAimbot = v
     task.spawn(function()
@@ -516,10 +559,10 @@ CreateToggle(TabSheriff, "Авто стрельба [Зациклено]", funct
     end)
 end)
 
--- Кроссхеир на уровне шифт-лока посередине экрана (в Шерифе)
+-- ИСПРАВЛЕННЫЙ ПРИЦЕЛ (Crosshair строго по центру на уровне шифт-лока)
 local Crosshair = Instance.new("Frame", ScreenGui)
 Crosshair.Size = UDim2.new(0, 16, 0, 2)
-Crosshair.Position = UDim2.new(0.5, -8, 0.5, -1)
+Crosshair.Position = UDim2.new(0.5, -8, 0.55, -1) -- На уровне смещенного прицела Shift-Lock
 Crosshair.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Crosshair.BorderSizePixel = 0
 Crosshair.Visible = false
