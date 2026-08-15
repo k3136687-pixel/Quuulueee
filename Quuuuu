@@ -1,5 +1,6 @@
 -- =============================================
 -- Quuua Hub | Modern MM2 Edition - Часть 1: UI
+-- TikTok: @symashedshi
 -- =============================================
 
 local Players = game:GetService("Players")
@@ -21,89 +22,12 @@ if not success then
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- ==================== ЗАГРУЗЧИК ====================
-local BlurOverlay = Instance.new("Frame", ScreenGui)
-BlurOverlay.Size = UDim2.new(2, 0, 2, 0)
-BlurOverlay.Position = UDim2.new(-0.5, 0, -0.5, 0)
-BlurOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-BlurOverlay.BackgroundTransparency = 0.4
-BlurOverlay.BorderSizePixel = 0
-BlurOverlay.ZIndex = 50
-
-local LoaderFrame = Instance.new("Frame", BlurOverlay)
-LoaderFrame.Size = UDim2.new(0, 340, 0, 170)
-LoaderFrame.Position = UDim2.new(0.5, -170, 0.5, -85)
-LoaderFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-LoaderFrame.BorderSizePixel = 0
-LoaderFrame.ZIndex = 51
-Instance.new("UICorner", LoaderFrame).CornerRadius = UDim.new(0, 14)
-
-local LoaderStroke = Instance.new("UIStroke", LoaderFrame)
-LoaderStroke.Color = Color3.fromRGB(240, 60, 60)
-LoaderStroke.Thickness = 1.5
-
-local LoaderTitle = Instance.new("TextLabel", LoaderFrame)
-LoaderTitle.Size = UDim2.new(1, 0, 0, 45)
-LoaderTitle.Position = UDim2.new(0, 0, 0, 15)
-LoaderTitle.BackgroundTransparency = 1
-LoaderTitle.Text = "⚡ Quuua-hub"
-LoaderTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoaderTitle.TextSize = 22
-LoaderTitle.Font = Enum.Font.GothamBold
-LoaderTitle.ZIndex = 52
-
-local LoaderStatus = Instance.new("TextLabel", LoaderFrame)
-LoaderStatus.Size = UDim2.new(1, 0, 0, 20)
-LoaderStatus.Position = UDim2.new(0, 0, 0, 60)
-LoaderStatus.BackgroundTransparency = 1
-LoaderStatus.Text = "Загрузка..."
-LoaderStatus.TextColor3 = Color3.fromRGB(150, 150, 160)
-LoaderStatus.TextSize = 13
-LoaderStatus.Font = Enum.Font.GothamMedium
-LoaderStatus.ZIndex = 52
-
-local BarBg = Instance.new("Frame", LoaderFrame)
-BarBg.Size = UDim2.new(0, 280, 0, 8)
-BarBg.Position = UDim2.new(0.5, -140, 0, 115)
-BarBg.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-BarBg.BorderSizePixel = 0
-BarBg.ZIndex = 52
-Instance.new("UICorner", BarBg).CornerRadius = UDim.new(1, 0)
-
-local BarFill = Instance.new("Frame", BarBg)
-BarFill.Size = UDim2.new(0, 0, 1, 0)
-BarFill.BackgroundColor3 = Color3.fromRGB(240, 60, 60)
-BarFill.BorderSizePixel = 0
-BarFill.ZIndex = 53
-Instance.new("UICorner", BarFill).CornerRadius = UDim.new(1, 0)
-
-task.spawn(function()
-    LoaderStatus.Text = "Инициализация Quuua-hub..."
-    TweenService:Create(BarFill, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Size = UDim2.new(0.4, 0, 1, 0)}):Play()
-    task.wait(0.6)
-    LoaderStatus.Text = "Загрузка элементов интерфейса..."
-    TweenService:Create(BarFill, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {Size = UDim2.new(0.8, 0, 1, 0)}):Play()
-    task.wait(0.7)
-    LoaderStatus.Text = "Готово!"
-    TweenService:Create(BarFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.new(1, 0, 1, 0)}):Play()
-    task.wait(0.4)
-    
-    local info = TweenInfo.new(0.4, Enum.EasingStyle.Quad)
-    TweenService:Create(LoaderFrame, info, {BackgroundTransparency = 1}):Play()
-    TweenService:Create(BlurOverlay, info, {BackgroundTransparency = 1}):Play()
-    for _, c in pairs(LoaderFrame:GetDescendants()) do
-        if c:IsA("TextLabel") then TweenService:Create(c, info, {TextTransparency = 1}):Play()
-        elseif c:IsA("Frame") then TweenService:Create(c, info, {BackgroundTransparency = 1}):Play() end
-    end
-    task.wait(0.4)
-    BlurOverlay:Destroy()
-end)
-
--- ==================== ОСНОВНОЕ ОКНО ====================
+-- ==================== ПЕРЕМЕННЫЕ И ТЕМЫ ====================
 _G.CurrentAccent = Color3.fromRGB(240, 60, 60)
 _G.isRGB = false
 _G.InteractiveElements = {}
 
+-- Главное окно (без растягивания для надежности кнопок)
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 520, 0, 340)
@@ -118,34 +42,6 @@ local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.Color = _G.CurrentAccent
 MainStroke.Thickness = 1.5
 table.insert(_G.InteractiveElements, MainStroke)
-
-local SizeConstraint = Instance.new("UISizeConstraint", MainFrame)
-SizeConstraint.MinSize = Vector2.new(420, 280)
-SizeConstraint.MaxSize = Vector2.new(850, 650)
-
--- Кнопка растягивания окна
-local ResizeCorner = Instance.new("TextButton", MainFrame)
-ResizeCorner.Size = UDim2.new(0, 30, 0, 30)
-ResizeCorner.Position = UDim2.new(1, -30, 1, -30)
-ResizeCorner.BackgroundTransparency = 1
-ResizeCorner.Text = "◢"
-ResizeCorner.TextColor3 = Color3.fromRGB(180, 180, 190)
-ResizeCorner.TextSize = 16
-ResizeCorner.ZIndex = 10
-
-local resizing = false
-ResizeCorner.MouseButton1Down:Connect(function() resizing = true end)
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then resizing = false end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local mousePos = UserInputService:GetMouseLocation()
-        local newX = math.clamp(mousePos.X - MainFrame.AbsolutePosition.X, 420, 850)
-        local newY = math.clamp(mousePos.Y - MainFrame.AbsolutePosition.Y, 280, 650)
-        MainFrame.Size = UDim2.new(0, newX, 0, newY)
-    end
-end)
 
 -- Шапка
 local Header = Instance.new("Frame", MainFrame)
@@ -164,7 +60,27 @@ Title.TextSize = 14
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Кнопки управления окном (Закрыть / Свернуть)
+-- СТИЛЬНАЯ ПЛАШКА СВОРАЧИВАНИЯ (С ОБОЛОЧКОЙ И ПРЯМОУГОЛЬНИКОМ)
+local MiniBar = Instance.new("TextButton", ScreenGui)
+MiniBar.Name = "QuuuaMiniBar"
+MiniBar.Size = UDim2.new(0, 160, 0, 40)
+MiniBar.Position = UDim2.new(0.5, -80, 0.05, 0)
+MiniBar.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+MiniBar.Text = "⚡ Quuua-hub (Открыть)"
+MiniBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+MiniBar.TextSize = 12
+MiniBar.Font = Enum.Font.GothamBold
+MiniBar.Visible = false
+MiniBar.Active = true
+MiniBar.Draggable = true
+Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0, 8)
+
+local MiniBarStroke = Instance.new("UIStroke", MiniBar)
+MiniBarStroke.Color = _G.CurrentAccent
+MiniBarStroke.Thickness = 1.5
+table.insert(_G.InteractiveElements, MiniBarStroke)
+
+-- Кнопка Закрыть
 local CloseBtn = Instance.new("TextButton", Header)
 CloseBtn.Size = UDim2.new(0, 26, 0, 26)
 CloseBtn.Position = UDim2.new(1, -34, 0, 7)
@@ -177,20 +93,7 @@ Instance.new("UIStroke", CloseBtn).Color = Color3.fromRGB(255, 100, 100)
 
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-local MiniBar = Instance.new("TextButton", ScreenGui)
-MiniBar.Size = UDim2.new(0, 150, 0, 36)
-MiniBar.Position = UDim2.new(0.5, -75, 0.05, 0)
-MiniBar.BackgroundColor3 = _G.CurrentAccent
-MiniBar.Text = "⚡ Quuua-hub"
-MiniBar.TextColor3 = Color3.fromRGB(255, 255, 255)
-MiniBar.TextSize = 13
-MiniBar.Font = Enum.Font.GothamBold
-MiniBar.Visible = false
-MiniBar.Active = true
-MiniBar.Draggable = true
-Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0, 8)
-table.insert(_G.InteractiveElements, MiniBar)
-
+-- Кнопка Свернуть (-)
 local MinimizeBtn = Instance.new("TextButton", Header)
 MinimizeBtn.Size = UDim2.new(0, 26, 0, 26)
 MinimizeBtn.Position = UDim2.new(1, -64, 0, 7)
@@ -210,7 +113,7 @@ MiniBar.MouseButton1Click:Connect(function()
     MainFrame.Visible = true
 end)
 
--- Боковое меню и контейнер контента
+-- Боковое меню и контейнеры
 local Sidebar = Instance.new("ScrollingFrame", MainFrame)
 Sidebar.Size = UDim2.new(0, 135, 1, -48)
 Sidebar.Position = UDim2.new(0, 6, 0, 44)
@@ -326,6 +229,7 @@ end
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
@@ -374,7 +278,7 @@ CreateToggle(TabGeneral, "Aimbot (Общий)", function(v)
             pcall(function()
                 local nearestPlayer = nil
                 local shortestDist = math.huge
-                local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+                local mousePos = UserInputService:GetMouseLocation()
                 
                 for _, p in pairs(Players:GetPlayers()) do
                     if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
@@ -401,21 +305,6 @@ CreateToggle(TabGeneral, "Aimbot (Общий)", function(v)
     end)
 end)
 
-CreateToggle(TabGeneral, "Большие головы (Head Size)", function(v)
-    _G.BigHeads = v
-    task.spawn(function()
-        while _G.BigHeads do
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
-                    p.Character.Head.Size = Vector3.new(3, 3, 3)
-                    p.Character.Head.CanCollide = false
-                end
-            end
-            task.wait(1)
-        end
-    end)
-end)
-
 CreateToggle(TabGeneral, "Ноклип (Проход сквозь стены)", function(v)
     _G.NoclipActive = v
     RunService.Stepped:Connect(function()
@@ -432,14 +321,14 @@ end)
 -- ==================== 2. КИЛЛЕР ====================
 local TabKiller = CreateTab("🔪 Киллер")
 
-CreateToggle(TabKiller, "Убить всех сразу [Зациклено]", function(v)
+CreateToggle(TabKiller, "Убить всех сразу (Убийца)", function(v)
     _G.KillAllActive = v
     if v then
         task.spawn(function()
             while _G.KillAllActive do
                 pcall(function()
                     local char = LocalPlayer.Character
-                    local rootPart = char and char:FindFirstChild("HumanoidRootPart")
+                    local rootPart = char and char:FindFirstChild("HumanoidRootRootPart") or char:FindFirstChild("HumanoidRootPart")
                     local knife = char and char:FindFirstChild("Knife") or LocalPlayer.Backpack:FindFirstChild("Knife")
                     if rootPart and knife then
                         if knife.Parent == LocalPlayer.Backpack then knife.Parent = char end
@@ -462,6 +351,29 @@ CreateToggle(TabKiller, "Убить всех сразу [Зациклено]", f
     end
 end)
 
+CreateToggle(TabKiller, "Авто-преследование шерифа", function(v)
+    _G.AutoFlingSheriff = v
+    task.spawn(function()
+        while _G.AutoFlingSheriff do
+            pcall(function()
+                local char = LocalPlayer.Character
+                local rootPart = char and char:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    for _, p in pairs(Players:GetPlayers()) do
+                        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                            local hasGun = p.Backpack:FindFirstChild("Gun") or p.Character:FindFirstChild("Gun")
+                            if hasGun then
+                                rootPart.CFrame = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1)
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
+
 -- ==================== 3. ШЕРИФ ====================
 local TabSheriff = CreateTab("🔫 Шериф")
 
@@ -481,10 +393,11 @@ CreateToggle(TabSheriff, "Автоподбор оружия", function(v)
     end)
 end)
 
+-- ИСПРАВЛЕННЫЙ ФИЛЛИНГ ШЕРИФА (Кнопка телепорта дропа к себе)
 local SheriffFillingBtn = Instance.new("TextButton", TabSheriff)
 SheriffFillingBtn.Size = UDim2.new(1, -6, 0, 34)
 SheriffFillingBtn.BackgroundColor3 = Color3.fromRGB(60, 150, 255)
-SheriffFillingBtn.Text = "  ⚡ Прокачанный Филлинг Шерифа"
+SheriffFillingBtn.Text = "  ⚡ Кнопка: Филлинг Шерифа (Забрать)"
 SheriffFillingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SheriffFillingBtn.TextSize = 11
 SheriffFillingBtn.Font = Enum.Font.GothamBold
@@ -501,6 +414,19 @@ SheriffFillingBtn.MouseButton1Click:Connect(function()
                 end
             end
         end
+        
+        local notify = Instance.new("TextLabel", ScreenGui)
+        notify.Size = UDim2.new(0, 260, 0, 40)
+        notify.Position = UDim2.new(0.5, -130, 0.15, 0)
+        notify.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        notify.Text = found and "✅ Пистолет успешно перемещен к вам!" : "⚠️ Дроп пистолета не найден!"
+        notify.TextColor3 = found and Color3.fromRGB(50, 215, 110) or Color3.fromRGB(240, 60, 60)
+        notify.TextSize = 11
+        notify.Font = Enum.Font.GothamBold
+        Instance.new("UICorner", notify).CornerRadius = UDim.new(0, 8)
+        
+        task.wait(2)
+        notify:Destroy()
     end)
 end)
 
@@ -577,35 +503,43 @@ end)
 -- ==================== 4. КНОПКА SHOOT ====================
 local TabButton = CreateTab("🔘 Кнопка Shoot")
 
+-- ПОЛНОСТЬЮ ПЕРЕРАБОТАННАЯ ЭКРАННАЯ КНОПКА SHOOT
 local ScreenShootBtn = Instance.new("TextButton", ScreenGui)
-ScreenShootBtn.Size = UDim2.new(0, 100, 0, 45)
-ScreenShootBtn.Position = UDim2.new(0.82, -50, 0.65, -22)
+ScreenShootBtn.Size = UDim2.new(0, 110, 0, 50)
+ScreenShootBtn.Position = UDim2.new(0.8, -55, 0.6, -25)
 ScreenShootBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 ScreenShootBtn.Text = "SHOOT"
 ScreenShootBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ScreenShootBtn.TextSize = 14
+ScreenShootBtn.TextSize = 15
 ScreenShootBtn.Font = Enum.Font.GothamBold
 ScreenShootBtn.Visible = false
 ScreenShootBtn.Active = true
 ScreenShootBtn.Draggable = true
 Instance.new("UICorner", ScreenShootBtn).CornerRadius = UDim.new(0, 10)
 
+local ShootStroke = Instance.new("UIStroke", ScreenShootBtn)
+ShootStroke.Color = Color3.fromRGB(255, 150, 150)
+ShootStroke.Thickness = 2
+
 ScreenShootBtn.MouseButton1Down:Connect(function()
     pcall(function()
         local char = LocalPlayer.Character
         local gun = char and char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
         if gun then
-            if gun.Parent == LocalPlayer.Backpack then gun.Parent = char end
+            if gun.Parent == LocalPlayer.Backpack then 
+                gun.Parent = char 
+                task.wait(0.05)
+            end
             gun:Activate()
         end
     end)
 end)
 
-CreateToggle(TabButton, "Показать экранную кнопку SHOOT", function(v)
+CreateToggle(TabButton, "Включить экранную кнопку SHOOT", function(v)
     ScreenShootBtn.Visible = v
 end)
 
--- ==================== 5. ДРУГОЕ И РАСТЯГ ====================
+-- ==================== 5. ДРУГОЕ ====================
 local TabOther = CreateTab("🎨 Другое")
 
 local function AddColorBtn(name, color)
@@ -628,11 +562,13 @@ AddColorBtn("Зеленый", Color3.fromRGB(50, 215, 110))
 AddColorBtn("Синий", Color3.fromRGB(60, 150, 255))
 AddColorBtn("Фиолетовый", Color3.fromRGB(175, 70, 255))
 
-CreateToggle(TabOther, "RGB Цвет (Радужный интерфейс)", function(v)
+CreateToggle(TabOther, "RGB Радужный стиль", function(v)
     _G.isRGB = v
 end)
 
+-- ==================== 6. РАСТЯГ ====================
 local TabStretch = CreateTab("📐 Растяг")
+
 local StretchToggleBtn = Instance.new("TextButton", TabStretch)
 StretchToggleBtn.Size = UDim2.new(1, -6, 0, 34)
 StretchToggleBtn.BackgroundColor3 = Color3.fromRGB(26, 26, 34)
